@@ -1,56 +1,57 @@
 let donorType = ""; 
-let recipientType = "B+"; // ستتغير الآن عبر القائمة
+let recipientType = "B+"; 
 let bloodOptions = ["A+", "B+", "AB+", "O+", "A-", "B-", "AB-", "O-"];
 let message = "Sélectionnez une fiole de sang pour commencer";
-let selReceveur; // المتغير الخاص بقائمة المستقبل
+let selReceveur;
 
 function setup() {
-  createCanvas(800, 550);
+  // جعل الكانفاس يملأ الشاشة بالكامل
+  createCanvas(windowWidth, windowHeight);
 
-  // إضافة قائمة اختيار فصيلة المستقبل في مكان لا يؤثر على الرسم
+  // وضع قائمة اختيار المستقبل في جهة اليمين
   let label = createP('Choisir le Receveur :');
-  label.position(600, 90);
+  label.position(width - 220, 90);
   label.style('font-family', 'sans-serif');
   label.style('font-weight', 'bold');
 
   selReceveur = createSelect();
-  selReceveur.position(600, 130);
-  selReceveur.style('width', '100px');
+  selReceveur.position(width - 220, 130);
+  selReceveur.style('width', '120px');
   selReceveur.style('padding', '5px');
   
-  // إضافة الخيارات للقائمة
   bloodOptions.forEach(type => selReceveur.option(type));
-  
-  // ضبط القيمة الافتراضية لتكون B+ كما في كودك الأصلي
   selReceveur.selected('B+');
 
-  // تحديث فصيلة المستقبل فور تغيير الاختيار
   selReceveur.changed(() => {
     recipientType = selReceveur.value();
     message = "Receveur changé en : " + recipientType;
   });
 }
 
+// تحديث حجم الشاشة تلقائياً إذا قام المستخدم بتكبير المتصفح
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+
 function draw() {
   background(250);
   
-  // رسم واجهة المختبر (Panel)
+  // 1. الشريط العلوي (الهيدر) بعرض الشاشة كاملاً
   noStroke();
   fill(41, 128, 185); 
   rect(0, 0, width, 80);
   
-  // العنوان
   fill(255);
   textAlign(CENTER);
   textSize(28);
   textStyle(BOLD);
-  text("SIMULATEUR DE TRANSFUSION", 400, 40);
+  text("SIMULATEUR DE TRANSFUSION", width/2, 40);
   
   textSize(14);
   textStyle(NORMAL);
-  text("Réalisé par : ILHAM", 400, 65);
+  text("Réalisé par : ILHAM", width/2, 65);
 
-  // 1. القائمة الجانبية للمتبرع
+  // 2. القائمة الجانبية للمتبرع
   fill(236, 240, 241);
   rect(20, 100, 180, 430, 15);
   
@@ -72,17 +73,17 @@ function draw() {
     }
   }
 
-  // 2. منطقة المريض (نمرر لها recipientType المتغير)
-  drawHospitalScene(500, 280, donorType, recipientType);
+  // 3. منطقة المريض (موضعة في وسط الشاشة)
+  drawHospitalScene(width / 2 + 50, height / 2 + 20, donorType, recipientType);
 
-  // 3. شريط الحالة بالأسفل
+  // 4. شريط الحالة السفلي بعرض الشاشة كاملاً
   fill(52, 73, 94);
   rect(0, height - 40, width, 40);
   fill(255);
   textSize(15);
   text(message, width/2, height - 15);
 
-  // 4. رسم قطرة الدم
+  // 5. رسم قطرة الدم المسحوبة
   if (donorType !== "") {
     drawStylizedDrop(mouseX, mouseY, donorType);
   }
@@ -102,17 +103,18 @@ function drawHospitalScene(x, y, donor, recipient) {
     }
   }
 
-  // رسم السرير الطبي
+  // السرير الطبي
   fill(189, 195, 199);
   rect(x - 100, y + 60, 200, 10, 5);
   rect(x - 90, y + 70, 10, 30);
   rect(x + 80, y + 70, 10, 30);
   
-  // رسم المريض
+  // جسم المريض
   fill(243, 156, 18); 
   if (isTouching && donor !== "") fill(reactionColor);
   rect(x - 50, y - 20, 100, 80, 15);
   
+  // الرأس
   fill(255, 224, 189); 
   ellipse(x, y - 60, 70, 70);
   
@@ -121,8 +123,10 @@ function drawHospitalScene(x, y, donor, recipient) {
   line(x+5, y-60, x+15, y-60);
   noStroke();
 
+  // نص الفصيلة فوق المريض
   fill(44, 62, 80);
-  textSize(18);
+  textSize(20);
+  textStyle(BOLD);
   text("PATIENT : " + recipient, x, y - 110);
 }
 
@@ -134,24 +138,25 @@ function drawStylizedDrop(x, y, label) {
   
   fill(255);
   textSize(16);
+  textStyle(BOLD);
   text(label, x, y + 5);
 }
 
 function canDonate(donor, recipient) {
-  // قواعد التوافق العلمي
   if (donor === recipient) return true;
   if (donor === "O-") return true;
   if (recipient === "AB+") return true;
   if (donor === "O+" && recipient.includes("+")) return true;
   if (donor === "A-") {
-    if (recipient === "A+" || recipient === "A-" || recipient === "AB+" || recipient === "AB-") return true;
+    if (recipient.startsWith("A") || recipient.startsWith("AB")) return true;
   }
   if (donor === "A+" && (recipient === "A+" || recipient === "AB+")) return true;
   if (donor === "B-") {
-    if (recipient === "B+" || recipient === "B-" || recipient === "AB+" || recipient === "AB-") return true;
+    if (recipient.startsWith("B") || recipient.startsWith("AB")) return true;
   }
   if (donor === "B+" && (recipient === "B+" || recipient === "AB+")) return true;
-  if (donor === "AB-" && (recipient === "AB+" || recipient === "AB-")) return true;
-  
+  if (donor === "AB-") {
+    if (recipient === "AB+" || recipient === "AB-") return true;
+  }
   return false;
 }
