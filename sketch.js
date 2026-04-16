@@ -5,10 +5,9 @@ let message = "Sélectionnez une fiole de sang pour commencer";
 let selReceveur;
 
 function setup() {
-  // جعل التطبيق يملأ المتصفح بالكامل
   createCanvas(windowWidth, windowHeight);
 
-  // إعداد قائمة اختيار المستقبل في جهة اليمين
+  // قائمة اختيار المستقبل (جهة اليمين)
   let label = createP('Choisir le Receveur :');
   label.position(width - 220, 90);
   label.style('font-family', 'sans-serif');
@@ -28,7 +27,6 @@ function setup() {
   });
 }
 
-// تحديث الحجم تلقائياً عند تكبير أو تصغير المتصفح
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
@@ -36,7 +34,7 @@ function windowResized() {
 function draw() {
   background(250);
   
-  // 1. الشريط العلوي (الهيدر)
+  // 1. الشريط العلوي
   noStroke();
   fill(41, 128, 185); 
   rect(0, 0, width, 80);
@@ -47,25 +45,36 @@ function draw() {
   textStyle(BOLD);
   text("SIMULATEUR DE TRANSFUSION", width/2, 40);
   
-  // إضافة اسمك الكامل هنا
   textSize(16);
   textStyle(ITALIC);
   text("Réalisé par : Ilham Najji", width/2, 65);
 
-  // 2. القائمة الجانبية للمتبرعين
+  // 2. منطقة المتبرعين (Donneurs) - جهة اليسار
   fill(236, 240, 241);
-  rect(20, 100, 180, 430, 15);
+  rect(20, 100, 180, 450, 15); // تكبير المستطيل قليلاً
   
+  // إضافة كلمة DONNEURS كعنوان للقائمة
+  fill(44, 62, 80);
+  textSize(18);
+  textStyle(BOLD);
+  textAlign(CENTER);
+  text("DONNEURS", 110, 130); 
+  
+  // خط فاصل بسيط تحت كلمة DONNEURS
+  stroke(189, 195, 199);
+  line(50, 140, 170, 140);
+  noStroke();
+
   for (let i = 0; i < bloodOptions.length; i++) {
-    let yPos = 135 + i * 48;
+    let yPos = 175 + i * 45; // إزاحة الأزرار للأسفل لترك مساحة للعنوان
     let isOver = mouseX > 40 && mouseX < 180 && mouseY > yPos-20 && mouseY < yPos+20;
     
     fill(donorType === bloodOptions[i] ? color(192, 57, 43) : 255);
-    rect(40, yPos - 20, 140, 40, 10);
+    rect(40, yPos - 20, 140, 35, 10);
     
     fill(donorType === bloodOptions[i] ? 255 : 50);
-    textAlign(CENTER);
     textSize(16);
+    textStyle(BOLD);
     text(bloodOptions[i], 110, yPos + 5);
 
     if (mouseIsPressed && isOver) {
@@ -74,10 +83,10 @@ function draw() {
     }
   }
 
-  // 3. منطقة المريض (تتوسط الشاشة دائماً)
+  // 3. منطقة المريض
   drawHospitalScene(width / 2 + 50, height / 2 + 20, donorType, recipientType);
 
-  // 4. شريط الحالة السفلي مع الاسم أيضاً لتوثيق الحقوق
+  // 4. شريط الحالة السفلي
   fill(52, 73, 94);
   rect(0, height - 40, width, 40);
   fill(255);
@@ -88,7 +97,7 @@ function draw() {
   textAlign(CENTER);
   text(message, width/2, height - 15);
 
-  // 5. رسم قطرة الدم التفاعلية
+  // 5. قطرة الدم
   if (donorType !== "") {
     drawStylizedDrop(mouseX, mouseY, donorType);
   }
@@ -108,13 +117,11 @@ function drawHospitalScene(x, y, donor, recipient) {
     }
   }
 
-  // السرير الطبي
   fill(189, 195, 199);
   rect(x - 100, y + 60, 200, 10, 5);
   rect(x - 90, y + 70, 10, 30);
   rect(x + 80, y + 70, 10, 30);
   
-  // المريض
   fill(243, 156, 18); 
   if (isTouching && donor !== "") fill(reactionColor);
   rect(x - 50, y - 20, 100, 80, 15);
@@ -130,7 +137,7 @@ function drawHospitalScene(x, y, donor, recipient) {
   fill(44, 62, 80);
   textSize(20);
   textStyle(BOLD);
-  text("PATIENT : " + recipient, x, y - 110);
+  text("RECEVEUR (PATIENT) : " + recipient, x, y - 110);
 }
 
 function drawStylizedDrop(x, y, label) {
