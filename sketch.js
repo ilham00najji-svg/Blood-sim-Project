@@ -5,10 +5,10 @@ let message = "Sélectionnez une fiole de sang pour commencer";
 let selReceveur;
 
 function setup() {
-  // جعل الكانفاس يملأ الشاشة بالكامل
+  // جعل التطبيق يملأ المتصفح بالكامل
   createCanvas(windowWidth, windowHeight);
 
-  // وضع قائمة اختيار المستقبل في جهة اليمين
+  // إعداد قائمة اختيار المستقبل في جهة اليمين
   let label = createP('Choisir le Receveur :');
   label.position(width - 220, 90);
   label.style('font-family', 'sans-serif');
@@ -28,7 +28,7 @@ function setup() {
   });
 }
 
-// تحديث حجم الشاشة تلقائياً إذا قام المستخدم بتكبير المتصفح
+// تحديث الحجم تلقائياً عند تكبير أو تصغير المتصفح
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
@@ -36,7 +36,7 @@ function windowResized() {
 function draw() {
   background(250);
   
-  // 1. الشريط العلوي (الهيدر) بعرض الشاشة كاملاً
+  // 1. الشريط العلوي (الهيدر)
   noStroke();
   fill(41, 128, 185); 
   rect(0, 0, width, 80);
@@ -47,11 +47,12 @@ function draw() {
   textStyle(BOLD);
   text("SIMULATEUR DE TRANSFUSION", width/2, 40);
   
-  textSize(14);
-  textStyle(NORMAL);
-  text("Réalisé par : ILHAM", width/2, 65);
+  // إضافة اسمك الكامل هنا
+  textSize(16);
+  textStyle(ITALIC);
+  text("Réalisé par : Ilham Najji", width/2, 65);
 
-  // 2. القائمة الجانبية للمتبرع
+  // 2. القائمة الجانبية للمتبرعين
   fill(236, 240, 241);
   rect(20, 100, 180, 430, 15);
   
@@ -73,17 +74,21 @@ function draw() {
     }
   }
 
-  // 3. منطقة المريض (موضعة في وسط الشاشة)
+  // 3. منطقة المريض (تتوسط الشاشة دائماً)
   drawHospitalScene(width / 2 + 50, height / 2 + 20, donorType, recipientType);
 
-  // 4. شريط الحالة السفلي بعرض الشاشة كاملاً
+  // 4. شريط الحالة السفلي مع الاسم أيضاً لتوثيق الحقوق
   fill(52, 73, 94);
   rect(0, height - 40, width, 40);
   fill(255);
-  textSize(15);
+  textSize(14);
+  textAlign(LEFT);
+  text("  Copyright © 2026 | Ilham Najji", 20, height - 15);
+  
+  textAlign(CENTER);
   text(message, width/2, height - 15);
 
-  // 5. رسم قطرة الدم المسحوبة
+  // 5. رسم قطرة الدم التفاعلية
   if (donorType !== "") {
     drawStylizedDrop(mouseX, mouseY, donorType);
   }
@@ -109,12 +114,11 @@ function drawHospitalScene(x, y, donor, recipient) {
   rect(x - 90, y + 70, 10, 30);
   rect(x + 80, y + 70, 10, 30);
   
-  // جسم المريض
+  // المريض
   fill(243, 156, 18); 
   if (isTouching && donor !== "") fill(reactionColor);
   rect(x - 50, y - 20, 100, 80, 15);
   
-  // الرأس
   fill(255, 224, 189); 
   ellipse(x, y - 60, 70, 70);
   
@@ -123,7 +127,6 @@ function drawHospitalScene(x, y, donor, recipient) {
   line(x+5, y-60, x+15, y-60);
   noStroke();
 
-  // نص الفصيلة فوق المريض
   fill(44, 62, 80);
   textSize(20);
   textStyle(BOLD);
