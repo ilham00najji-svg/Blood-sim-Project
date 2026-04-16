@@ -5,9 +5,13 @@ let message = "Sélectionnez une fiole de sang pour commencer";
 let explanation = "L'explication scientifique apparaîtra ici après le test.";
 let selReceveur;
 let ecgPoints = []; 
+let backgroundElements = []; // لتخزين عناصر الخلفية
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+
+  // إنشاء عناصر الخلفية مرة واحدة لتحسين الأداء
+  createBackgroundElements();
 
   // قائمة اختيار المستقبل
   let label = createP('Choisir le Receveur :');
@@ -19,6 +23,8 @@ function setup() {
   selReceveur.position(width - 220, 130);
   selReceveur.style('width', '120px');
   selReceveur.style('padding', '5px');
+  selReceveur.style('border-radius', '5px');
+  selReceveur.style('border', '1px solid #ccc');
   
   bloodOptions.forEach(type => selReceveur.option(type));
   selReceveur.selected('B+');
@@ -33,12 +39,14 @@ function setup() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  createBackgroundElements(); // إعادة إنشاء العناصر عند تغيير حجم الشاشة
 }
 
 function draw() {
-  background(245);
+  // 1. رسم الخلفية الطبية
+  drawMedicalBackground();
   
-  // 1. العنوان
+  // 2. العنوان
   noStroke();
   fill(41, 128, 185); 
   rect(0, 0, width, 80);
@@ -49,27 +57,114 @@ function draw() {
   text("STATION DE TRANSFUSION : ANALYSE PÉDAGOGIQUE", width/2, 40);
   textSize(14);
   textStyle(ITALIC);
-  text("Conception Scientifique : Ilham Najji", width/2, 65);
+  text("Conception Didactique : Ilham Najji", width/2, 65);
 
-  // 2. لوحة المتبرعين
+  // 3. لوحة المتبرعين
   drawDonorPanel();
 
-  // 3. منطقة المريض والتحليل
-  drawHospitalScene(width / 2 - 100, height / 2 + 20, donorType, recipientType);
+  // 4. منطقة المريض والتحليل
+  drawHospitalScene(width / 2 - 120, height / 2 + 20, donorType, recipientType);
 
-  // 4. لوحة الشرح البيداغوجي (Pedagogical Panel)
+  // 5. لوحة الشرح البيداغوجي
   drawExplanationPanel();
 
-  // 5. شريط الحالة
+  // 6. شريط الحالة
   drawStatusBar();
 
+  // 7. قطرة الدم المسحوبة
   if (donorType !== "") {
     drawStylizedDrop(mouseX, mouseY, donorType);
   }
 }
 
+// --- وظائف الرسم الجديدة للخلفية الطبية ---
+
+function createBackgroundElements() {
+  backgroundElements = [];
+  // إضافة رفوف اختبار عشوائية
+  for (let i = 0; i < 5; i++) {
+    backgroundElements.push({
+      type: 'rack',
+      x: random(width * 0.6, width * 0.9),
+      y: random(height * 0.2, height * 0.5),
+      tubes: floor(random(3, 7))
+    });
+  }
+  // إضافة جزيئات عائمة (رموز بيولوجية مبسطة)
+  for (let i = 0; i < 20; i++) {
+    backgroundElements.push({
+      type: 'particle',
+      x: random(width),
+      y: random(height),
+      size: random(5, 15),
+      speed: random(0.2, 1)
+    });
+  }
+}
+
+function drawMedicalBackground() {
+  background(240, 245, 250); // لون خلفية أزرق فاتح جداً (طبي)
+
+  // رسم شبكة خفيفة كخلفية هندسية
+  stroke(220, 230, 240);
+  strokeWeight(0.5);
+  for (let x = 0; x < width; x += 50) line(x, 0, x, height);
+  for (let y = 0; y < height; y += 50) line(0, y, width, y);
+  noStroke();
+
+  // رسم الرفوف وأنابيب الاختبار
+  for (let el of backgroundElements) {
+    if (el.type === 'rack') {
+      drawTestTubeRack(el.x, el.y, el.tubes);
+    } else if (el.type === 'particle') {
+      fill(200, 220, 240, 150);
+      ellipse(el.x, el.y, el.size);
+      // تحريك الجزيئات ببطء
+      el.y -= el.speed;
+      if (el.y < -el.size) el.y = height + el.size;
+    }
+  }
+}
+
+function drawTestTubeRack(x, y, numTubes) {
+  let rackWidth = numTubes * 25 + 10;
+  fill(180, 190, 200);
+  rect(x, y, rackWidth, 10, 5); // قاعدة الرف
+  fill(200, 210, 220);
+  rect(x + 5, y - 5, rackWidth - 10, 5, 2); // الجزء العلوي
+
+  for (let i = 0; i < numTubes; i++) {
+    let tubeX = x + 15 + i * 25;
+    drawTestTube(tubeX, y - 5);
+  }
+}
+
+function drawTestTube(x, y) {
+  let tubeHeight = 50;
+  let tubeWidth = 15;
+  
+  // الزجاج
+  stroke(150, 180, 200);
+  strokeWeight(1);
+  fill(255, 255, 255, 100);
+  rect(x, y - tubeHeight, tubeWidth, tubeHeight, 0, 0, 7, 7);
+  
+  // السائل (ألوان عشوائية طبية)
+  noStroke();
+  let colors = [color(192, 57, 43, 180), color(41, 128, 185, 180), color(243, 156, 18, 180)];
+  fill(random(colors));
+  let fillHeight = random(10, tubeHeight - 10);
+  rect(x + 2, y - fillHeight - 2, tubeWidth - 4, fillHeight, 0, 0, 5, 5);
+  
+  // السدادة
+  fill(100);
+  rect(x, y - tubeHeight - 5, tubeWidth, 5, 2);
+}
+
+// --- الوظائف الأصلية (دون تغيير) ---
+
 function drawDonorPanel() {
-  fill(236, 240, 241);
+  fill(236, 240, 241, 220); // إضافة شفافية قليلاً
   rect(20, 100, 180, 460, 15);
   fill(44, 62, 80);
   textSize(18);
@@ -83,11 +178,19 @@ function drawDonorPanel() {
   for (let i = 0; i < bloodOptions.length; i++) {
     let yPos = 175 + i * 45;
     let isOver = mouseX > 40 && mouseX < 180 && mouseY > yPos-20 && mouseY < yPos+20;
+    
+    // تصميم الأزرار كقوارير صغيرة
     fill(donorType === bloodOptions[i] ? color(192, 57, 43) : 255);
-    rect(40, yPos - 20, 140, 35, 10);
+    rect(40, yPos - 20, 140, 35, 17); // زوايا دائرية أكثر
+    
+    // رقبة القارورة
+    fill(donorType === bloodOptions[i] ? color(150, 40, 30) : 230);
+    rect(40, yPos - 20, 15, 35, 17, 0, 0, 17);
+    
     fill(donorType === bloodOptions[i] ? 255 : 50);
     textStyle(BOLD);
-    text(bloodOptions[i], 110, yPos + 5);
+    text(bloodOptions[i], 120, yPos + 5);
+    
     if (mouseIsPressed && isOver) donorType = bloodOptions[i];
   }
 }
@@ -109,7 +212,7 @@ function drawHospitalScene(x, y, donor, recipient) {
   }
 
   // شاشة ECG
-  drawECG(x + 180, y - 50, status);
+  drawECG(x + 190, y - 50, status);
 
   // السرير والمريض
   fill(189, 195, 199);
@@ -125,6 +228,7 @@ function drawHospitalScene(x, y, donor, recipient) {
 
   fill(44, 62, 80);
   textSize(18);
+  textStyle(BOLD);
   text("PATIENT : " + recipient, x, y - 115);
 }
 
@@ -132,7 +236,7 @@ function drawExplanationPanel() {
   let panelX = width - 350;
   let panelY = height / 2;
   
-  fill(255);
+  fill(255, 240); // إضافة شفافية قليلاً
   stroke(41, 128, 185);
   strokeWeight(2);
   rect(panelX, panelY, 320, 180, 10);
@@ -162,12 +266,12 @@ function getScientificExplanation(donor, recipient, success) {
     else if (recipient === "AB+") explanation = "AB+ est le receveur universel. Il possède déjà tous τα antigènes, donc son corps ne produit pas d'anticorps contre le sang injecté.";
     else explanation = "Le transfert est possible car le donneur ne possède pas d'antigènes étrangers que le receveur pourrait rejeter.";
   } else {
-    explanation = "DANGER ! Le receveur possède des anticorps qui attaquent les antigènes étrangers du donneur (" + donor + "). Cela provoque une agglutination mortelle.";
+    explanation = "DANGER ! Le receveur possède des anticorps qui attaquent les antigènes étrangers du donneور (" + donor + "). Cela provoque une agglutination mortelle.";
   }
 }
 
 function drawECG(x, y, status) {
-  fill(0);
+  fill(0, 200); // إضافة شفافية قليلاً
   stroke(status === 2 ? color(255, 0, 0) : color(46, 204, 113));
   strokeWeight(2);
   rect(x, y, 160, 100, 5);
@@ -211,7 +315,7 @@ function drawStatusBar() {
   fill(255);
   textAlign(LEFT);
   textSize(13);
-  text("  Expertise Master : Ilham Najji | Simulateur Didactique v3.0", 20, height - 15);
+  text("  Expertise Master هندسة التكوين والوسائط الرقمية : Ilham Najji | Simulateur Didactique v4.0", 20, height - 15);
   textAlign(CENTER);
   text(message, width/2, height - 15);
 }
